@@ -1,22 +1,25 @@
 from napalm.package.detector_info import DetectorInfo, CompetitionInfo
 from slither.detectors.abstract_detector import AbstractDetector, DetectorClassification
 
+def _classification_to_str(classification: DetectorClassification) -> str:
+    match classification:
+        case DetectorClassification.HIGH:
+            return "HIGH"
+        case DetectorClassification.MEDIUM:
+            return "MEDIUM"
+        case DetectorClassification.LOW:
+            return "LOW"
+        case DetectorClassification.INFORMATIONAL:
+            return "INFO"
+        case DetectorClassification.OPTIMIZATION:
+            return "OPTIMIZATION"
+        case _:
+            return "unknown"
+
 
 def into_detector_info(slither_detector: AbstractDetector) -> DetectorInfo:
-    severity = slither_detector.IMPACT
-    match severity:
-        case DetectorClassification.HIGH:
-            severity = "HIGH"
-        case DetectorClassification.MEDIUM:
-            severity = "MEDIUM"
-        case DetectorClassification.LOW:
-            severity = "LOW"
-        case DetectorClassification.INFORMATIONAL:
-            severity = "INFO"
-        case DetectorClassification.OPTIMIZATION:
-            severity = "OPTIMIZATION"
-        case _:
-            severity = "unknown"
+    severity = _classification_to_str(slither_detector.IMPACT)
+    confidence = _classification_to_str(slither_detector.CONFIDENCE)
 
     competitors = (
         [
@@ -36,6 +39,7 @@ def into_detector_info(slither_detector: AbstractDetector) -> DetectorInfo:
         short_description=slither_detector.HELP or "No description available",
         long_description=slither_detector.HELP or "No description available",
         severity=severity,
+        confidence=confidence,
         base=slither_detector,
         twins=[] if not hasattr(slither_detector, "TWINS") else slither_detector.TWINS,
         false_positive_prompt=(
