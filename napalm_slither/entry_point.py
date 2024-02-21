@@ -3,6 +3,7 @@ import os
 from loguru import logger
 from napalm.package.collection_manager import CollectionManager
 from napalm.storage import WorkflowStorage, get_storage_provider
+from napalm.utils.workflow import get_collections_for_workflow
 
 
 def napalm_entry_point_slither():
@@ -25,9 +26,7 @@ def napalm_entry_point_slither():
         return [], []
 
     # get the collection manager
-    get_storage_provider("pickle")
-    workflow_storage = WorkflowStorage(get_storage_provider("pickle"))
-    workflow_collections = workflow_storage.get_workflow(workflow)
+    workflow_collections = get_collections_for_workflow(get_storage_provider("pickle"), workflow)
 
     if workflow_collections is None or workflow_collections is []:
         logger.info(f"Workflow {workflow} does not exist")
