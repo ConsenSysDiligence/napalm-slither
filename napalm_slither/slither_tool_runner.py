@@ -9,6 +9,7 @@ from pydantic_sarif.model import (
 from napalm_slither.environment_setter import EnvironmentSetter
 from napalm_slither.slither_modules import base_slither_detectors
 
+from pathlib import Path
 
 class SlitherToolRunner(ToolRunner):
     @staticmethod
@@ -28,6 +29,13 @@ class SlitherToolRunner(ToolRunner):
             )
 
     def _run_analysis(self, target, slither_arguments, slither_base_collection):
+        target = Path(target) if not isinstance(target, Path) else target
+        is_dir = target.is_dir() if isinstance(target, Path) else False
+        target = str(target)
+        if is_dir:
+            cwd = target
+            target = "."
+
         exclusion_args = (
             self._slither_base_exclusion_args() if not slither_base_collection else []
         )
@@ -36,7 +44,10 @@ class SlitherToolRunner(ToolRunner):
             ["slither", "--sarif", "-"] + additional_args + exclusion_args + [target]
         )
         # print(" ".join(command))
-        result = subprocess.run(command, capture_output=True, text=True)
+        if is_dir:
+            result = subprocess.run(command, capture_output=True, text=True, cwd=cwd)
+        else:
+            result = subprocess.run(command, capture_output=True, text=True)
 
         if result.stderr:
             logger.debug(f"Slither Logs: \n{result.stderr}")
@@ -46,6 +57,7 @@ class SlitherToolRunner(ToolRunner):
         except Exception as e:
             logger.error(f"Error parsing slither output", error=e)
             print("Try running command locally:")
+            print(command)
             print(" ".join(command))
             return None
 
