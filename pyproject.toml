@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "napalm-slither"
-version = "0.1.0"
+version = "0.1.1"
 description = "Napalm slither plugin"
 authors = ["Joran Honig <joran.honig@consensys.net>"]
 license = "AGPLv3"
